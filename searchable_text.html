@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Searchable text</title>
+    <!-- Include jQuery library -->
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+	
+    <!-- Include the Custom Elements API-->
+    <script src="https://app.kontent.ai/js-api/custom-element.js"></script>
+
+    <!-- Custom element CSS styles -->
+    <style>
+		/* We recommended you always set margin to zero to avoid problems when displaying the element in UI */
+		@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic);
+		html{
+		  font-family:sans-serif;
+		  -ms-text-size-adjust:100%;
+		  -webkit-text-size-adjust:100%;
+		}
+		body {
+			margin: 0;
+			overflow-y: hidden;
+			overflow-x: hidden;
+		}
+		
+    </style>
+</head>
+<body>
+	<div id="status"></div>
+<script>	
+
+	var source_text = '';
+  
+	function updateSize() {
+		var height = 30;
+		try {
+			height = parseInt($("html").height());		
+		} catch (err) {
+			console.error(err);
+		}
+		CustomElement.setHeight(height);
+	}
+  
+	function initCustomElement() {
+		try {
+			CustomElement.init((element, _context) => {
+				if (element.config) {
+					if (element.config.source_text) {
+						source_text = element.config.source_text;
+					}
+					else {
+						showError("Missing source 'Text' element codename");
+					}
+				}
+				
+				updateSize();
+			});
+		} catch (err) {
+			console.error(err);
+		}
+	}
+  
+	initCustomElement();	
+		
+	CustomElement.observeElementChanges([], (changedElementCodenames) => {
+		if (changedElementCodenames[0] == source_text) {
+			returnValue(changedElementCodenames[0]);
+		}
+	})
+
+	function returnValue(codename) {
+		CustomElement.getElementValue(codename, (value) => {
+			setValue(value);
+		});
+	}
+		
+	function showError(message) {
+		$('#status').css("color","#ef5350");					
+		$('#status').text(message);		
+		throw new Error(message);
+	}
+		
+	function setValue(value) {
+		const segmenter = new Intl.Segmenter([], { granularity: 'word' });
+		const segmentedText = segmenter.segment(value);
+		const words = [...segmentedText].filter(s => s.isWordLike).map(s => s.segment);
+		console.log(words);
+		CustomElement.setValue(JSON.stringify(words));
+	}
+
+</script>
+
+</body>
+</html>
