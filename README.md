@@ -36,6 +36,4 @@ Netlify has made this easy. If you click the deploy button below, it will guide 
 
 You can use `Contains` filter to find the item you need:
 
-```json
-/items?elements.indexed_text[contains]=word
-```
+`/items?elements.indexed_text[contains]=word`
